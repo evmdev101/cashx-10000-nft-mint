@@ -1,11 +1,12 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.24;
 
-import {ERC721} from "@openzeppelin/contracts/token/ERC721/ERC721.sol";
-import {ERC721Enumerable} from "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
-import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
-import {Ownable2Step} from "@openzeppelin/contracts/access/Ownable2Step.sol";
-import {ReentrancyGuard} from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
+// OpenZeppelin imports are pinned to the version used for testing.
+import {ERC721} from "@openzeppelin/contracts@5.0.2/token/ERC721/ERC721.sol";
+import {ERC721Enumerable} from "@openzeppelin/contracts@5.0.2/token/ERC721/extensions/ERC721Enumerable.sol";
+import {Ownable} from "@openzeppelin/contracts@5.0.2/access/Ownable.sol";
+import {Ownable2Step} from "@openzeppelin/contracts@5.0.2/access/Ownable2Step.sol";
+import {ReentrancyGuard} from "@openzeppelin/contracts@5.0.2/utils/ReentrancyGuard.sol";
 
 /// @title CashX Ecosystem NFT
 /// @notice Fixed-supply ERC-721 collection minted with native PLS on PulseChain.

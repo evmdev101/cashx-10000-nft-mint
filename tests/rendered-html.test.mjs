@@ -1,91 +1,112 @@
 import assert from "node:assert/strict";
-import { access, readFile, readdir } from "node:fs/promises";
+import { readdir, readFile } from "node:fs/promises";
 import test from "node:test";
 
-const developmentPreviewMeta =
-  /<meta(?=[^>]*\bname=["']codex-preview["'])(?=[^>]*\bcontent=["']development["'])[^>]*>/i;
-const templateRoot = new URL("../", import.meta.url);
-const previewRoot = new URL("../app/_sites-preview/", import.meta.url);
-
-async function render() {
-  const workerUrl = new URL("../dist/server/index.js", import.meta.url);
-  workerUrl.searchParams.set("test", `${process.pid}-${Date.now()}`);
-  const { default: worker } = await import(workerUrl.href);
-
-  return worker.fetch(
-    new Request("http://localhost/", {
-      headers: { accept: "text/html" },
-    }),
-    {
-      ASSETS: {
-        fetch: async () => new Response("Not found", { status: 404 }),
-      },
-    },
-    {
-      waitUntil() {},
-      passThroughOnException() {},
-    },
+async function productionBuild() {
+  const html = await readFile(new URL("../dist/index.html", import.meta.url), "utf8");
+  const assetDirectory = new URL("../dist/assets/", import.meta.url);
+  const scripts = (await readdir(assetDirectory)).filter((name) => name.endsWith(".js"));
+  const bundles = await Promise.all(
+    scripts.map((name) => readFile(new URL(name, assetDirectory), "utf8")),
   );
+
+  return { html, bundle: bundles.join("\n") };
 }
 
-test("server-renders the starter loading skeleton", async () => {
-  const response = await render();
-  assert.equal(response.status, 200);
-  assert.match(response.headers.get("content-type") ?? "", /^text\/html\b/i);
-
-  const html = await response.text();
-  assert.match(html, developmentPreviewMeta);
-  assert.match(html, /<title>Your site is taking shape<\/title>/i);
-  assert.match(html, /Building your site/);
-  assert.match(html, /Your site is taking shape/);
-  assert.match(
-    html,
-    /Your first version will appear here automatically when it’s ready\./,
-  );
-  assert.doesNotMatch(html, /Codex/);
-  assert.match(html, /react-loading-skeleton/);
-  assert.match(html, /role="status"/);
+test("builds the mainnet CashX mint experience for static hosting", async () => {
+  const { html, bundle } = await productionBuild();
+  assert.match(html, /<title>CashX Ecosystem NFT Mint<\/title>/i);
+  assert.match(html, /evmdev101\.github\.io\/cashx-10000-nft-mint/);
+  assert.match(bundle, /Mint Overview/);
+  assert.match(bundle, /Connect wallet/);
+  assert.match(bundle, /0x744351E2846498D040B649D694CAB21f32f14AFe/);
+  assert.match(bundle, /27306495/);
+  assert.match(bundle, /1000000/);
+  assert.doesNotMatch(`${html}\n${bundle}`, /codex-preview|Building your site|react-loading-skeleton/i);
 });
 
-test("keeps the loading skeleton scoped and disposable", async () => {
-  const [preview, css, page, layout, packageJson, files] = await Promise.all([
-    readFile(new URL("SkeletonPreview.tsx", previewRoot), "utf8"),
-    readFile(new URL("preview.css", previewRoot), "utf8"),
-    readFile(new URL("../app/page.tsx", import.meta.url), "utf8"),
-    readFile(new URL("../app/layout.tsx", import.meta.url), "utf8"),
+test("keeps the Nexion staking tab honest and ready for contract wiring", async () => {
+  const [experience, css, packageJson] = await Promise.all([
+    readFile(new URL("../app/MintExperience.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/globals.css", import.meta.url), "utf8"),
     readFile(new URL("../package.json", import.meta.url), "utf8"),
-    readdir(previewRoot),
   ]);
 
-  assert.deepEqual(files.sort(), ["SkeletonPreview.tsx", "preview.css"]);
-  assert.match(preview, /from "react-loading-skeleton"/);
-  assert.match(preview, /baseColor="#eceae7"/);
-  assert.match(preview, /highlightColor="#f9f8f6"/);
-  assert.match(preview, /duration=\{2\.8\}/);
-  assert.match(preview, /sites-skeleton-search-placeholder/);
-  assert.match(packageJson, /"react-loading-skeleton": "3\.5\.0"/);
+  assert.match(experience, /type PageView = "mint" \| "stake"/);
+  assert.match(experience, /https:\/\/nexionpulse\.com\/farmexplorer/);
+  assert.match(experience, /Awaiting Nexion setup/);
+  assert.match(experience, /APR and reward totals will load directly from the farm contracts/);
+  assert.match(experience, /This preview cannot submit staking transactions/);
+  assert.match(experience, /Claim rewards[\s\S]*disabled/);
+  assert.match(css, /\.stake-page\s*\{/);
+  assert.match(css, /\.stake-metrics\s*\{/);
+  assert.match(css, /\.stake-actions\s*\{/);
+  assert.match(css, /@media \(max-width: 650px\)[\s\S]*\.stake-metrics/);
+  assert.doesNotMatch(packageJson, /react-loading-skeleton/);
+});
 
-  const shellIndex = preview.indexOf('className="sites-skeleton-shell"');
-  const statusIndex = preview.indexOf('className="sites-skeleton-status"');
-  assert.ok(shellIndex >= 0 && statusIndex > shellIndex);
-  assert.match(css, /position:\s*fixed/);
-  assert.match(css, /inset:\s*0/);
-  assert.match(css, /opacity:\s*0\.52/);
-  assert.match(css, /prefers-reduced-motion:\s*reduce/);
-  assert.doesNotMatch(css, /#020617|canvas|pets|progress/i);
-  assert.doesNotMatch(
-    preview,
-    /loading-spinner|status-mark|status-progress|canvas|cookie|random/i,
+test("starts with Cyberpunk colors and the Constellations animation", async () => {
+  const [themes, experience] = await Promise.all([
+    readFile(new URL("../app/themes.ts", import.meta.url), "utf8"),
+    readFile(new URL("../app/MintExperience.tsx", import.meta.url), "utf8"),
+  ]);
+
+  assert.match(themes, /export const DEFAULT_THEME = 'cyberpunk'/);
+  assert.match(themes, /cyberpunk:\s*'constellations'/);
+  assert.match(experience, /useState\(DEFAULT_THEME\)/);
+  assert.match(experience, /useState\(THEMES\[DEFAULT_THEME\]\)/);
+  assert.match(experience, /useState\(\(\) => defaultFx\(DEFAULT_THEME\)\)/);
+});
+
+test("loads holders and mint activity from the deployed contract", async () => {
+  const [experience, contract, css] = await Promise.all([
+    readFile(new URL("../app/MintExperience.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/contract.ts", import.meta.url), "utf8"),
+    readFile(new URL("../app/globals.css", import.meta.url), "utf8"),
+  ]);
+
+  assert.match(experience, /type Tab = "mint" \| "holders" \| "activity"/);
+  assert.match(experience, /readCollectionHistory/);
+  assert.match(experience, /contract\.queryFilter\(contract\.filters\.Transfer/);
+  assert.match(experience, /Recent Mints/);
+  assert.match(contract, /event Transfer/);
+  assert.match(contract, /event Minted/);
+  assert.match(css, /\.holders-table/);
+  assert.match(css, /\.activity-row/);
+});
+
+test("allows a typed mint quantity up to the remaining supply", async () => {
+  const experience = await readFile(
+    new URL("../app/MintExperience.tsx", import.meta.url),
+    "utf8",
   );
 
-  assert.match(page, /export const metadata:\s*Metadata/);
-  assert.match(page, /"codex-preview": "development"/);
-  assert.match(page, /<SkeletonPreview \/>/);
-  assert.match(layout, /title:\s*"Starter Project"/);
-  assert.doesNotMatch(layout, /codex-preview|_sites-preview|themeColor|\bViewport\b/);
-  assert.doesNotMatch(css, /(^|\s)(html|body)\s*\{/m);
+  assert.match(experience, /type="number"/);
+  assert.match(experience, /aria-label="NFT quantity"/);
+  assert.match(experience, /max=\{Math\.max\(1, remaining\)\}/);
+  assert.match(experience, /Math\.trunc\(nextQuantity\)/);
+});
 
-  await assert.rejects(
-    access(new URL("public/_sites-preview", templateRoot)),
+test("pins the verified deployment values for the mainnet site build", async () => {
+  const contract = await readFile(
+    new URL("../app/contract.ts", import.meta.url),
+    "utf8",
   );
+
+  assert.match(contract, /NEXT_PUBLIC_CASHX_CHAIN_ID/);
+  assert.match(contract, /NEXT_PUBLIC_CASHX_CONTRACT_ADDRESS/);
+  assert.match(contract, /NEXT_PUBLIC_CASHX_DEPLOYMENT_BLOCK/);
+  assert.match(contract, /configuredChainId === 369/);
+  assert.match(contract, /https:\/\/rpc\.pulsechain\.com/);
+  assert.match(contract, /1000000000000000000000000/);
+  assert.match(contract, /0x744351E2846498D040B649D694CAB21f32f14AFe/);
+  assert.match(contract, /27_306_495/);
+
+  const validator = await readFile(
+    new URL("../scripts/validate-site-config.mjs", import.meta.url),
+    "utf8",
+  );
+  assert.match(validator, /Mainnet build refused/);
+  assert.match(validator, /chainId === "369"/);
+  assert.match(validator, /0x744351E2846498D040B649D694CAB21f32f14AFe/);
 });
