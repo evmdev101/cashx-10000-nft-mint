@@ -120,9 +120,6 @@ test("lists the verified contracts and answers the mint FAQ", async () => {
     readFile(new URL("../app/globals.css", import.meta.url), "utf8"),
   ]);
 
-  // The token address is only correct on mainnet, so it must stay chain-gated.
-  assert.match(contract, /0x4C450b3C2b89a2DAbE5A3eE39FF475134A30d665/);
-  assert.match(contract, /configuredChainId === 369\s*\?\s*\[/);
   assert.match(contract, /0x8875b605ad560792FC8420F901235961d863F62e/);
   assert.match(experience, /IMPORTANT_CONTRACTS\.map/);
   assert.match(experience, /Important contracts/);

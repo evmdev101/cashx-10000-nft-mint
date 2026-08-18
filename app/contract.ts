@@ -60,10 +60,7 @@ export const CASHX_DEPLOYMENT_BLOCK = configuredDeploymentBlock;
 export const CASHX_CHAIN_ID = configuredChainId;
 export const CASHX_NETWORK = chainConfig;
 
-// Verified on PulseChain mainnet: the mint treasury is the constructor treasury
-// and the CashX token reports name "CashX" / symbol "CASHX".
 const TREASURY_ADDRESS = "0x8875b605ad560792FC8420F901235961d863F62e";
-const CASHX_TOKEN_ADDRESS = "0x4C450b3C2b89a2DAbE5A3eE39FF475134A30d665";
 
 export const IMPORTANT_CONTRACTS = [
   {
@@ -74,14 +71,6 @@ export const IMPORTANT_CONTRACTS = [
     label: "Mint treasury",
     address: TREASURY_ADDRESS,
   },
-  ...(configuredChainId === 369
-    ? [
-        {
-          label: "CashX token",
-          address: CASHX_TOKEN_ADDRESS,
-        },
-      ]
-    : []),
 ];
 
 export const CASHX_ABI = [
