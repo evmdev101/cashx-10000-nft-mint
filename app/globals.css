@@ -1380,15 +1380,6 @@ a:focus-visible {
   border-top: 1px solid color-mix(in srgb, var(--border) 72%, transparent);
 }
 
-.contract-links h3 {
-  margin: 0 0 10px;
-  color: color-mix(in srgb, var(--fg) 62%, transparent);
-  font-size: 9px;
-  font-weight: 700;
-  letter-spacing: 0.2em;
-  text-transform: uppercase;
-}
-
 .contract-link-row {
   display: flex;
   align-items: center;

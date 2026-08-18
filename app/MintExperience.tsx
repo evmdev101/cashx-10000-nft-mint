@@ -869,8 +869,7 @@ export function MintExperience() {
                 </div>
               )}
 
-              <section className="contract-links" aria-labelledby="contract-links-title">
-                <h3 id="contract-links-title">Important contracts</h3>
+              <section className="contract-links" aria-label="Important contracts">
                 {IMPORTANT_CONTRACTS.map(({ label, address }) => (
                   <div className="contract-link-row" key={address}>
                     <div>
