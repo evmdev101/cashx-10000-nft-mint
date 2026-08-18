@@ -75,6 +75,26 @@ test("loads holders and mint activity from the deployed contract", async () => {
   assert.match(css, /\.activity-row/);
 });
 
+test("reports the PLS raised and mint progress instead of a static supply box", async () => {
+  const [experience, css] = await Promise.all([
+    readFile(new URL("../app/MintExperience.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/globals.css", import.meta.url), "utf8"),
+  ]);
+
+  assert.match(experience, /label="PLS raised"/);
+  assert.match(experience, /const raised = mintPrice \* BigInt\(minted\)/);
+  assert.match(experience, /const raiseGoal = mintPrice \* BigInt\(COLLECTION_SIZE\)/);
+  assert.match(experience, /Items minted/);
+  assert.match(experience, /role="progressbar"/);
+  assert.match(css, /\.mint-progress-track\s*\{/);
+  assert.match(css, /\.mint-progress-fill\s*\{/);
+
+  // The replaced supply box and its captions should be gone.
+  assert.doesNotMatch(experience, /label="Total supply"/);
+  assert.doesNotMatch(experience, /Shared edition collection/);
+  assert.doesNotMatch(experience, /chainName\} price/);
+});
+
 test("offers a local wallet disconnect without altering the browser wallet", async () => {
   const [experience, css] = await Promise.all([
     readFile(new URL("../app/MintExperience.tsx", import.meta.url), "utf8"),

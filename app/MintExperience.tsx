@@ -68,6 +68,18 @@ const formatPls = (value: bigint) => {
   return fraction ? `${formattedWhole}.${fraction}` : formattedWhole;
 };
 
+const formatCompactPls = (value: bigint) => {
+  const pls = Number(formatEther(value));
+  // Truncate rather than round so the raised figure is never overstated.
+  const compact = (divisor: number, suffix: string) =>
+    `${Math.floor((pls / divisor) * 100) / 100}${suffix}`;
+
+  if (pls >= 1_000_000_000) return compact(1_000_000_000, "B");
+  if (pls >= 1_000_000) return compact(1_000_000, "M");
+  if (pls >= 1_000) return compact(1_000, "K");
+  return formatPls(value);
+};
+
 const shortAddress = (address: string) =>
   `${address.slice(0, 6)}…${address.slice(-4)}`;
 
@@ -186,7 +198,7 @@ function OverviewMetric({
   label: string;
   value: string;
   unit?: string;
-  note: string;
+  note?: string;
   long?: boolean;
 }) {
   return (
@@ -196,7 +208,7 @@ function OverviewMetric({
         <strong className={long ? "is-long" : undefined}>{value}</strong>
         {unit && <em>{unit}</em>}
       </div>
-      <small>{note}</small>
+      {note && <small>{note}</small>}
     </article>
   );
 }
@@ -317,6 +329,9 @@ export function MintExperience() {
   const [themeColors, setThemeColors] = useState(THEMES[DEFAULT_THEME]);
   const [themeFx, setThemeFx] = useState(() => defaultFx(DEFAULT_THEME));
   const total = mintPrice * BigInt(quantity);
+  const raised = mintPrice * BigInt(minted);
+  const raiseGoal = mintPrice * BigInt(COLLECTION_SIZE);
+  const mintedPercent = (minted / COLLECTION_SIZE) * 100;
 
   const refreshContractData = useCallback(async () => {
     setHistoryLoading(true);
@@ -579,14 +594,13 @@ export function MintExperience() {
               label="Price per NFT"
               value={formatPls(mintPrice)}
               unit={CASHX_NETWORK.nativeCurrency.symbol}
-              note={`${CASHX_NETWORK.chainName} price`}
               long
             />
             <OverviewMetric
-              label="Total supply"
-              value={formatNumber(COLLECTION_SIZE)}
-              unit="NFTs"
-              note="Shared edition collection"
+              label="PLS raised"
+              value={formatCompactPls(raised)}
+              unit={CASHX_NETWORK.nativeCurrency.symbol}
+              note={`Goal · ${formatCompactPls(raiseGoal)} ${CASHX_NETWORK.nativeCurrency.symbol}`}
             />
             <OverviewMetric
               label="Total minted"
@@ -626,6 +640,26 @@ export function MintExperience() {
 
             <div className="purchase-column">
               <h2>Mint CashX Ecosystem NFT</h2>
+
+              <div className="mint-progress">
+                <div className="mint-progress-head">
+                  <span>Items minted</span>
+                  <span>{formatNumber(minted)} / {formatNumber(COLLECTION_SIZE)}</span>
+                </div>
+                <div
+                  className="mint-progress-track"
+                  role="progressbar"
+                  aria-label="Items minted"
+                  aria-valuemin={0}
+                  aria-valuemax={COLLECTION_SIZE}
+                  aria-valuenow={minted}
+                >
+                  <div
+                    className="mint-progress-fill"
+                    style={{ width: `${minted === 0 ? 0 : Math.max(mintedPercent, 1)}%` }}
+                  />
+                </div>
+              </div>
 
               <div className="compact-purchase-panel">
                 <div className="steps">

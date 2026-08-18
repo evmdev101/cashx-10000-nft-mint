@@ -1282,6 +1282,41 @@ a:focus-visible {
   line-height: 1.7;
 }
 
+.mint-progress {
+  margin-bottom: 18px;
+}
+
+.mint-progress-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 8px;
+  color: var(--fg);
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.mint-progress-head span:last-child {
+  color: color-mix(in srgb, var(--fg) 72%, transparent);
+  font-variant-numeric: tabular-nums;
+}
+
+.mint-progress-track {
+  height: 12px;
+  overflow: hidden;
+  border-radius: 6px;
+  background: color-mix(in srgb, var(--fg) 9%, transparent);
+}
+
+.mint-progress-fill {
+  height: 100%;
+  border-radius: 6px;
+  background: var(--red);
+  box-shadow: 0 0 12px color-mix(in srgb, var(--red) 55%, transparent);
+  transition: width 700ms ease;
+}
+
 .compact-purchase-panel {
   margin-top: 0;
   overflow: hidden;
