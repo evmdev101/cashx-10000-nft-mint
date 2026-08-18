@@ -430,7 +430,8 @@ export function MintExperience() {
       const signer = await provider.getSigner();
       const address = await signer.getAddress();
       setWalletAddress(address);
-      setMintMessage(`Wallet connected to ${CASHX_NETWORK.chainName}.`);
+      // Clear any earlier error rather than announcing a connection the header already shows.
+      setMintMessage("");
       await Promise.all([refreshContractData(), refreshWalletBalances(address)]);
       return { provider, signer };
     } catch (error) {
