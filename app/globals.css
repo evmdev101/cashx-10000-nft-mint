@@ -328,6 +328,121 @@ a:focus-visible {
   color: var(--red);
 }
 
+.wallet-menu {
+  position: relative;
+}
+
+.wallet-modal-backdrop {
+  position: fixed;
+  z-index: 120;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  background: rgba(4, 8, 15, 0.78);
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
+}
+
+.wallet-popover {
+  position: relative;
+  width: min(366px, 100%);
+  display: grid;
+  justify-items: center;
+  gap: 9px;
+  padding: 27px 18px 18px;
+  border: 1px solid #e2e3e8;
+  border-radius: 22px;
+  color: #3f424d;
+  background: #f8f8fb;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.38);
+  animation: wallet-modal-in 180ms ease-out;
+}
+
+.wallet-popover-close {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  display: grid;
+  width: 29px;
+  height: 29px;
+  place-items: center;
+  border: 0;
+  border-radius: 50%;
+  color: #858994;
+  background: #e5e6eb;
+  cursor: pointer;
+  font: 800 19px/1 Arial, sans-serif;
+}
+
+.wallet-popover-close:hover {
+  color: #565a64;
+  background: #d9dbe2;
+}
+
+.wallet-avatar {
+  width: 74px;
+  height: 74px;
+  margin: 0 0 3px;
+  border: 1px solid rgba(73, 42, 59, 0.22);
+  border-radius: 50%;
+  background:
+    linear-gradient(135deg, transparent 42%, rgba(255, 255, 255, 0.25) 43%, transparent 58%),
+    linear-gradient(135deg, #833953, #b66a83 48%, #6d3f4e);
+}
+
+.wallet-popover > strong {
+  color: #42454f;
+  font: 800 17px ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
+.wallet-popover > small {
+  color: #858994;
+  font: 500 13px ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
+.wallet-popover-actions {
+  width: 100%;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-top: 11px;
+}
+
+.wallet-popover-actions button {
+  min-height: 60px;
+  border: 1px solid #dedfe6;
+  border-radius: 11px;
+  color: #575a65;
+  background: #fff;
+  cursor: pointer;
+  font: 600 12px ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
+.wallet-popover-actions button:hover {
+  border-color: #aa617b;
+  color: #86435d;
+  background: #fff8fb;
+}
+
+.wallet-popover-actions span {
+  display: block;
+  margin-bottom: 5px;
+  font-size: 17px;
+  line-height: 1;
+}
+
+@keyframes wallet-modal-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
 .nav-actions {
   display: flex;
   justify-self: end;

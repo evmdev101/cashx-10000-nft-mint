@@ -301,6 +301,9 @@ export function MintExperience() {
   const [tab, setTab] = useState<Tab>("mint");
   const [showSetupNote, setShowSetupNote] = useState(false);
   const [walletAddress, setWalletAddress] = useState("");
+  const [walletBalance, setWalletBalance] = useState<bigint | null>(null);
+  const [walletMenuOpen, setWalletMenuOpen] = useState(false);
+  const [walletCopied, setWalletCopied] = useState(false);
   const [mintPrice, setMintPrice] = useState(INITIAL_PRICE_WEI);
   const [minted, setMinted] = useState(0);
   const [remaining, setRemaining] = useState(COLLECTION_SIZE);
@@ -353,7 +356,9 @@ export function MintExperience() {
       const provider = new BrowserProvider(ethereum);
       const signer = await provider.getSigner();
       const address = await signer.getAddress();
+      const balance = await provider.getBalance(address);
       setWalletAddress(address);
+      setWalletBalance(balance);
       setMintMessage(`Wallet connected to ${CASHX_NETWORK.chainName}.`);
       await refreshContractData();
       return { provider, signer };
@@ -431,6 +436,23 @@ export function MintExperience() {
     setShowSetupNote(false);
   };
 
+  const disconnectWallet = () => {
+    setWalletAddress("");
+    setWalletBalance(null);
+    setWalletMenuOpen(false);
+    setWalletCopied(false);
+    setMintMessage("Wallet disconnected from this site.");
+  };
+
+  const copyWalletAddress = async () => {
+    try {
+      await navigator.clipboard.writeText(walletAddress);
+      setWalletCopied(true);
+    } catch {
+      setMintMessage("Unable to copy the wallet address. Please copy it manually.");
+    }
+  };
+
   return (
     <main className="site-shell" id="top">
       <header className="topbar">
@@ -486,9 +508,66 @@ export function MintExperience() {
             onCustomColors={applyCustomColors}
             onFx={setThemeFx}
           />
-          <button className="wallet-button" type="button" onClick={() => void connectWallet()}>
-            {walletAddress ? shortAddress(walletAddress) : "Connect wallet"}
-          </button>
+          <div className="wallet-menu">
+            <button
+              className="wallet-button"
+              type="button"
+              aria-expanded={walletAddress ? walletMenuOpen : undefined}
+              aria-controls={walletAddress ? "wallet-account-menu" : undefined}
+              onClick={() => {
+                if (walletAddress) {
+                  setWalletCopied(false);
+                  setWalletMenuOpen((open) => !open);
+                } else {
+                  void connectWallet();
+                }
+              }}
+            >
+              {walletAddress ? shortAddress(walletAddress) : "Connect wallet"}
+            </button>
+
+            {walletAddress && walletMenuOpen && (
+              <div
+                className="wallet-modal-backdrop"
+                role="presentation"
+                onMouseDown={(event) => {
+                  if (event.target === event.currentTarget) {
+                    setWalletMenuOpen(false);
+                  }
+                }}
+              >
+                <section
+                  className="wallet-popover"
+                  id="wallet-account-menu"
+                  role="dialog"
+                  aria-modal="true"
+                  aria-label="Connected wallet"
+                >
+                  <button
+                    className="wallet-popover-close"
+                    type="button"
+                    onClick={() => setWalletMenuOpen(false)}
+                    aria-label="Close wallet menu"
+                  >
+                    ×
+                  </button>
+                  <span className="wallet-avatar" aria-hidden="true" />
+                  <strong>{shortAddress(walletAddress)}</strong>
+                  <small>{walletBalance === null ? "Loading balance…" : `${formatPls(walletBalance)} PLS`}</small>
+                  <div className="wallet-popover-actions">
+                    <button type="button" onClick={() => void copyWalletAddress()}>
+                      <span aria-hidden="true">⧉</span>
+                      {walletCopied ? "Copied" : "Copy Address"}
+                    </button>
+                    <button type="button" onClick={disconnectWallet}>
+                      <span aria-hidden="true">↪</span>
+                      Disconnect
+                    </button>
+                  </div>
+                </section>
+              </div>
+            )}
+          </div>
         </div>
       </header>
 

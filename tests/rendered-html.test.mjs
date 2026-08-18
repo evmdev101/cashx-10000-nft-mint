@@ -75,6 +75,24 @@ test("loads holders and mint activity from the deployed contract", async () => {
   assert.match(css, /\.activity-row/);
 });
 
+test("offers a local wallet disconnect without altering the browser wallet", async () => {
+  const [experience, css] = await Promise.all([
+    readFile(new URL("../app/MintExperience.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/globals.css", import.meta.url), "utf8"),
+  ]);
+
+  assert.match(experience, /Wallet disconnected from this site\./);
+  assert.match(experience, /Copy Address/);
+  assert.match(experience, /Disconnect/);
+  assert.match(experience, /navigator\.clipboard\.writeText\(walletAddress\)/);
+  assert.match(experience, /setWalletAddress\(""\)/);
+  assert.match(experience, /provider\.getBalance\(address\)/);
+  assert.match(experience, /wallet-modal-backdrop/);
+  assert.match(css, /\.wallet-popover\s*\{/);
+  assert.match(css, /\.wallet-popover-actions\s*\{/);
+  assert.match(css, /\.wallet-modal-backdrop\s*\{/);
+});
+
 test("allows a typed mint quantity up to the remaining supply", async () => {
   const experience = await readFile(
     new URL("../app/MintExperience.tsx", import.meta.url),
