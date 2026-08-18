@@ -67,21 +67,18 @@ const CASHX_TOKEN_ADDRESS = "0x4C450b3C2b89a2DAbE5A3eE39FF475134A30d665";
 
 export const IMPORTANT_CONTRACTS = [
   {
-    label: "CashX Ecosystem NFT",
+    label: "CashX Ecosystem NFT contract",
     address: configuredAddress,
-    note: "The ERC-721 collection this site mints from.",
   },
   {
     label: "Mint treasury",
     address: TREASURY_ADDRESS,
-    note: "Every mint payment is forwarded here in the same transaction.",
   },
   ...(configuredChainId === 369
     ? [
         {
           label: "CashX token",
           address: CASHX_TOKEN_ADDRESS,
-          note: "The CashX ecosystem token on PulseChain.",
         },
       ]
     : []),

@@ -1420,14 +1420,6 @@ a:focus-visible {
   overflow-wrap: anywhere;
 }
 
-.contract-link-row small {
-  display: block;
-  margin-top: 2px;
-  color: color-mix(in srgb, var(--fg) 55%, transparent);
-  font-size: 10px;
-  line-height: 1.5;
-}
-
 .contract-link-row button {
   flex-shrink: 0;
   min-width: 62px;

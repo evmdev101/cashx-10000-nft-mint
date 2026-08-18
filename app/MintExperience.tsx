@@ -870,7 +870,7 @@ export function MintExperience() {
 
               <section className="contract-links" aria-labelledby="contract-links-title">
                 <h3 id="contract-links-title">Important contracts</h3>
-                {IMPORTANT_CONTRACTS.map(({ label, address, note }) => (
+                {IMPORTANT_CONTRACTS.map(({ label, address }) => (
                   <div className="contract-link-row" key={address}>
                     <div>
                       <span>{label}</span>
@@ -881,7 +881,6 @@ export function MintExperience() {
                       >
                         {address.slice(0, 10)}…{address.slice(-8)}
                       </a>
-                      <small>{note}</small>
                     </div>
                     <button
                       type="button"
