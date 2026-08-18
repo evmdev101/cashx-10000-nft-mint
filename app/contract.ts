@@ -60,10 +60,38 @@ export const CASHX_DEPLOYMENT_BLOCK = configuredDeploymentBlock;
 export const CASHX_CHAIN_ID = configuredChainId;
 export const CASHX_NETWORK = chainConfig;
 
+// Verified on PulseChain mainnet: the mint treasury is the constructor treasury
+// and the CashX token reports name "CashX" / symbol "CASHX".
+const TREASURY_ADDRESS = "0x8875b605ad560792FC8420F901235961d863F62e";
+const CASHX_TOKEN_ADDRESS = "0x4C450b3C2b89a2DAbE5A3eE39FF475134A30d665";
+
+export const IMPORTANT_CONTRACTS = [
+  {
+    label: "CashX Ecosystem NFT",
+    address: configuredAddress,
+    note: "The ERC-721 collection this site mints from.",
+  },
+  {
+    label: "Mint treasury",
+    address: TREASURY_ADDRESS,
+    note: "Every mint payment is forwarded here in the same transaction.",
+  },
+  ...(configuredChainId === 369
+    ? [
+        {
+          label: "CashX token",
+          address: CASHX_TOKEN_ADDRESS,
+          note: "The CashX ecosystem token on PulseChain.",
+        },
+      ]
+    : []),
+];
+
 export const CASHX_ABI = [
   "function PRICE_PER_NFT() view returns (uint256)",
   "function MAX_SUPPLY() view returns (uint256)",
   "function totalSupply() view returns (uint256)",
+  "function balanceOf(address owner) view returns (uint256)",
   "function remainingSupply() view returns (uint256)",
   "function saleActive() view returns (bool)",
   "function mint(uint256 quantity) payable",

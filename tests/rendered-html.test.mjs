@@ -95,6 +95,45 @@ test("reports the PLS raised and mint progress instead of a static supply box", 
   assert.doesNotMatch(experience, /chainName\} price/);
 });
 
+test("tilts the artwork with a toggleable light and honors reduced motion", async () => {
+  const [tilt, experience, css] = await Promise.all([
+    readFile(new URL("../app/TiltCard.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/MintExperience.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/globals.css", import.meta.url), "utf8"),
+  ]);
+
+  assert.match(tilt, /requestAnimationFrame/);
+  assert.match(tilt, /onPointerMove/);
+  assert.match(tilt, /rotateY\(\$\{s\.cx \* MAX_TILT\}deg\)/);
+  assert.match(tilt, /prefers-reduced-motion: reduce/);
+  assert.match(tilt, /\{light && <div className="tilt-glare"/);
+  assert.match(experience, /Light \{lightOn \? "On" : "Off"\}/);
+  assert.match(css, /\.tilt-card\s*\{/);
+  assert.match(css, /perspective: 1100px/);
+  assert.match(css, /mix-blend-mode: screen/);
+});
+
+test("lists the verified contracts and answers the mint FAQ", async () => {
+  const [experience, contract, css] = await Promise.all([
+    readFile(new URL("../app/MintExperience.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/contract.ts", import.meta.url), "utf8"),
+    readFile(new URL("../app/globals.css", import.meta.url), "utf8"),
+  ]);
+
+  // The token address is only correct on mainnet, so it must stay chain-gated.
+  assert.match(contract, /0x4C450b3C2b89a2DAbE5A3eE39FF475134A30d665/);
+  assert.match(contract, /configuredChainId === 369\s*\?\s*\[/);
+  assert.match(contract, /0x8875b605ad560792FC8420F901235961d863F62e/);
+  assert.match(experience, /IMPORTANT_CONTRACTS\.map/);
+  assert.match(experience, /Important contracts/);
+  assert.match(experience, /buildFaqs\(/);
+  assert.match(experience, /Your CashX NFTs/);
+  assert.match(experience, /contract\.balanceOf\(address\)/);
+  assert.match(css, /\.faq-item\s*\{/);
+  assert.match(css, /\.wallet-balances\s*\{/);
+  assert.match(css, /\.contract-link-row\s*\{/);
+});
+
 test("offers a local wallet disconnect without altering the browser wallet", async () => {
   const [experience, css] = await Promise.all([
     readFile(new URL("../app/MintExperience.tsx", import.meta.url), "utf8"),
@@ -106,7 +145,7 @@ test("offers a local wallet disconnect without altering the browser wallet", asy
   assert.match(experience, /Disconnect/);
   assert.match(experience, /navigator\.clipboard\.writeText\(walletAddress\)/);
   assert.match(experience, /setWalletAddress\(""\)/);
-  assert.match(experience, /provider\.getBalance\(address\)/);
+  assert.match(experience, /rpcProvider\.getBalance\(address\)/);
   assert.match(experience, /wallet-modal-backdrop/);
   assert.match(css, /\.wallet-popover\s*\{/);
   assert.match(css, /\.wallet-popover-actions\s*\{/);

@@ -9,11 +9,13 @@ import {
   type Eip1193Provider,
 } from "ethers";
 import ThemePicker from "./ThemePicker";
+import { TiltCard } from "./TiltCard";
 import {
   CASHX_ABI,
   CASHX_CONTRACT_ADDRESS,
   CASHX_DEPLOYMENT_BLOCK,
   CASHX_NETWORK,
+  IMPORTANT_CONTRACTS,
   INITIAL_PRICE_WEI,
 } from "./contract";
 import { DEFAULT_THEME, THEMES, applyTheme, defaultFx } from "./themes";
@@ -79,6 +81,45 @@ const formatCompactPls = (value: bigint) => {
   if (pls >= 1_000) return compact(1_000, "K");
   return formatPls(value);
 };
+
+const buildFaqs = (priceLabel: string, symbol: string) => [
+  {
+    q: "What is the CashX Ecosystem NFT?",
+    a: `A ${new Intl.NumberFormat("en-US").format(COLLECTION_SIZE)}-piece ERC-721 collection on ${CASHX_NETWORK.chainName}. Every token shares the same CashX Ecosystem artwork, and token IDs are issued in mint order starting at #1.`,
+  },
+  {
+    q: "How much does a mint cost?",
+    a: `${priceLabel} per NFT, paid in native ${symbol}, plus ${CASHX_NETWORK.chainName} gas. The mint panel reads the price directly from the deployed contract, so it cannot show a stale figure.`,
+  },
+  {
+    q: "When does the mint end?",
+    a: `There is no deadline. The sale stays open until all ${new Intl.NumberFormat("en-US").format(COLLECTION_SIZE)} NFTs are minted, however long that takes.`,
+  },
+  {
+    q: "How many can I mint at once?",
+    a: "Any quantity up to the number still remaining in the collection. The project sets no per-transaction cap, but a very large batch costs proportionally more gas and may not fit in a single transaction.",
+  },
+  {
+    q: "Where does my payment go?",
+    a: "The full mint payment is forwarded to the project treasury inside the same transaction. The contract itself never holds mint proceeds, and an incorrect payment amount reverts.",
+  },
+  {
+    q: "What wallet and network do I need?",
+    a: `Use MetaMask or Rabby on ${CASHX_NETWORK.chainName}. If your wallet is on a different network, the site offers to switch or add it when you connect.`,
+  },
+  {
+    q: "Where does the artwork live?",
+    a: "The image and metadata are pinned on IPFS and the metadata URI is stored in the contract, so the artwork does not depend on this website continuing to exist.",
+  },
+  {
+    q: "Can the artwork change later?",
+    a: "The owner can update the metadata URI until it is frozen. Freezing is permanent and on-chain: once frozen, nobody can change the artwork, including the owner.",
+  },
+  {
+    q: "What happens after I mint?",
+    a: "Your NFT appears in your wallet and in the Holders and Activity tabs. Nexion staking will be enabled only after Nexion confirms the farm and reward contracts for this collection; until then the Stake tab stays in setup mode.",
+  },
+];
 
 const shortAddress = (address: string) =>
   `${address.slice(0, 6)}…${address.slice(-4)}`;
@@ -314,6 +355,9 @@ export function MintExperience() {
   const [showSetupNote, setShowSetupNote] = useState(false);
   const [walletAddress, setWalletAddress] = useState("");
   const [walletBalance, setWalletBalance] = useState<bigint | null>(null);
+  const [walletNftCount, setWalletNftCount] = useState<number | null>(null);
+  const [lightOn, setLightOn] = useState(true);
+  const [copiedAddress, setCopiedAddress] = useState("");
   const [walletMenuOpen, setWalletMenuOpen] = useState(false);
   const [walletCopied, setWalletCopied] = useState(false);
   const [mintPrice, setMintPrice] = useState(INITIAL_PRICE_WEI);
@@ -358,6 +402,20 @@ export function MintExperience() {
     }
   }, []);
 
+  const refreshWalletBalances = useCallback(async (address: string) => {
+    try {
+      const contract = new Contract(CASHX_CONTRACT_ADDRESS, CASHX_ABI, rpcProvider);
+      const [balance, owned] = await Promise.all([
+        rpcProvider.getBalance(address),
+        contract.balanceOf(address) as Promise<bigint>,
+      ]);
+      setWalletBalance(balance);
+      setWalletNftCount(Number(owned));
+    } catch {
+      // Balances are informational, so a failed read must not block minting.
+    }
+  }, []);
+
   const connectWallet = useCallback(async () => {
     const ethereum = window.ethereum;
     if (!ethereum) {
@@ -371,17 +429,15 @@ export function MintExperience() {
       const provider = new BrowserProvider(ethereum);
       const signer = await provider.getSigner();
       const address = await signer.getAddress();
-      const balance = await provider.getBalance(address);
       setWalletAddress(address);
-      setWalletBalance(balance);
       setMintMessage(`Wallet connected to ${CASHX_NETWORK.chainName}.`);
-      await refreshContractData();
+      await Promise.all([refreshContractData(), refreshWalletBalances(address)]);
       return { provider, signer };
     } catch (error) {
       setMintMessage(readableWalletError(error));
       return null;
     }
-  }, [refreshContractData]);
+  }, [refreshContractData, refreshWalletBalances]);
 
   const mintNfts = useCallback(async () => {
     setIsMinting(true);
@@ -407,13 +463,16 @@ export function MintExperience() {
       setMintMessage(
         `${quantity} CashX NFT${quantity === 1 ? "" : "s"} minted successfully.`,
       );
-      await refreshContractData();
+      await Promise.all([
+        refreshContractData(),
+        refreshWalletBalances(await wallet.signer.getAddress()),
+      ]);
     } catch (error) {
       setMintMessage(readableWalletError(error));
     } finally {
       setIsMinting(false);
     }
-  }, [connectWallet, quantity, refreshContractData]);
+  }, [connectWallet, quantity, refreshContractData, refreshWalletBalances]);
 
   useEffect(() => {
     const refreshTimer = window.setTimeout(() => {
@@ -451,9 +510,19 @@ export function MintExperience() {
     setShowSetupNote(false);
   };
 
+  const copyAddress = async (address: string) => {
+    try {
+      await navigator.clipboard.writeText(address);
+      setCopiedAddress(address);
+    } catch {
+      setMintMessage("Unable to copy the address. Please copy it manually.");
+    }
+  };
+
   const disconnectWallet = () => {
     setWalletAddress("");
     setWalletBalance(null);
+    setWalletNftCount(null);
     setWalletMenuOpen(false);
     setWalletCopied(false);
     setMintMessage("Wallet disconnected from this site.");
@@ -628,15 +697,22 @@ export function MintExperience() {
 
         {tab === "mint" && (
           <section className="degen-mint-layout">
-            <article className="degen-art-card">
-              <div className="card-art art-crop">
-                <img
-                  className="art-source"
-                  src="cashx-art-source.png"
-                  alt="CashX Ecosystem NFT"
-                />
-              </div>
-            </article>
+            <div className="art-column">
+              <TiltCard
+                src="cashx-art-source.png"
+                alt="CashX Ecosystem NFT"
+                light={lightOn}
+              />
+              <button
+                type="button"
+                className={lightOn ? "light-toggle is-on" : "light-toggle"}
+                onClick={() => setLightOn((on) => !on)}
+                aria-pressed={lightOn}
+                title="Toggle the light effect"
+              >
+                Light {lightOn ? "On" : "Off"}
+              </button>
+            </div>
 
             <div className="purchase-column">
               <h2>Mint CashX Ecosystem NFT</h2>
@@ -774,6 +850,49 @@ export function MintExperience() {
                   )}
                 </div>
               </section>
+
+              {walletAddress && (
+                <div className="wallet-balances">
+                  <div>
+                    <span>Your {CASHX_NETWORK.nativeCurrency.symbol}</span>
+                    <strong>
+                      {walletBalance === null ? "…" : formatPls(walletBalance)}
+                    </strong>
+                  </div>
+                  <div>
+                    <span>Your CashX NFTs</span>
+                    <strong>
+                      {walletNftCount === null ? "…" : formatNumber(walletNftCount)}
+                    </strong>
+                  </div>
+                </div>
+              )}
+
+              <section className="contract-links" aria-labelledby="contract-links-title">
+                <h3 id="contract-links-title">Important contracts</h3>
+                {IMPORTANT_CONTRACTS.map(({ label, address, note }) => (
+                  <div className="contract-link-row" key={address}>
+                    <div>
+                      <span>{label}</span>
+                      <a
+                        href={`${CASHX_NETWORK.blockExplorerUrls[0]}/address/${address}`}
+                        target="_blank"
+                        rel="noreferrer"
+                      >
+                        {address.slice(0, 10)}…{address.slice(-8)}
+                      </a>
+                      <small>{note}</small>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => void copyAddress(address)}
+                      aria-label={`Copy the ${label} address`}
+                    >
+                      {copiedAddress === address ? "Copied" : "Copy"}
+                    </button>
+                  </div>
+                ))}
+              </section>
             </div>
           </section>
         )}
@@ -878,6 +997,24 @@ export function MintExperience() {
             </div>
           </section>
         )}
+
+        <section className="faq-section" aria-labelledby="faq-title">
+          <h2 id="faq-title">FAQ</h2>
+          <div className="faq-list">
+            {buildFaqs(
+              `${formatPls(mintPrice)} ${CASHX_NETWORK.nativeCurrency.symbol}`,
+              CASHX_NETWORK.nativeCurrency.symbol,
+            ).map(({ q, a }) => (
+              <details className="faq-item" key={q}>
+                <summary>
+                  {q}
+                  <i aria-hidden="true">+</i>
+                </summary>
+                <p>{a}</p>
+              </details>
+            ))}
+          </div>
+        </section>
       </div>}
 
       {pageView === "stake" && (

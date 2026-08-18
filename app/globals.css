@@ -1282,6 +1282,233 @@ a:focus-visible {
   line-height: 1.7;
 }
 
+.art-column {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.tilt-wrap {
+  width: 100%;
+  max-width: 520px;
+  perspective: 1100px;
+  cursor: grab;
+  user-select: none;
+}
+
+.tilt-card {
+  position: relative;
+  overflow: hidden;
+  border: 2px solid var(--red);
+  border-radius: 10px;
+  background: var(--panel);
+  box-shadow: 0 0 70px color-mix(in srgb, var(--red) 45%, transparent);
+  transform-style: preserve-3d;
+  will-change: transform;
+}
+
+.tilt-art {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 26 / 35;
+  object-fit: cover;
+}
+
+.tilt-glare {
+  position: absolute;
+  inset: 0;
+  opacity: 0.85;
+  mix-blend-mode: screen;
+  pointer-events: none;
+}
+
+.light-toggle {
+  padding: 5px 11px;
+  border: 1px solid color-mix(in srgb, var(--border) 72%, transparent);
+  border-radius: 7px;
+  color: color-mix(in srgb, var(--fg) 72%, transparent);
+  background: color-mix(in srgb, var(--panel) 72%, transparent);
+  cursor: pointer;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.light-toggle.is-on {
+  border-color: var(--red);
+  color: var(--red);
+}
+
+.wallet-balances {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.wallet-balances > div {
+  padding: 10px 12px;
+  border: 1px solid color-mix(in srgb, var(--border) 72%, transparent);
+  border-radius: 9px;
+  background: color-mix(in srgb, var(--panel) 72%, transparent);
+}
+
+.wallet-balances span {
+  display: block;
+  color: color-mix(in srgb, var(--fg) 62%, transparent);
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+}
+
+.wallet-balances strong {
+  display: block;
+  margin-top: 4px;
+  color: var(--fg);
+  font-size: 12px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  overflow-wrap: anywhere;
+}
+
+.contract-links {
+  margin-top: 20px;
+  padding-top: 14px;
+  border-top: 1px solid color-mix(in srgb, var(--border) 72%, transparent);
+}
+
+.contract-links h3 {
+  margin: 0 0 10px;
+  color: color-mix(in srgb, var(--fg) 62%, transparent);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+}
+
+.contract-link-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 9px 0;
+  border-top: 1px solid color-mix(in srgb, var(--border) 40%, transparent);
+}
+
+.contract-link-row:first-of-type {
+  border-top: 0;
+}
+
+.contract-link-row > div {
+  min-width: 0;
+}
+
+.contract-link-row span {
+  display: block;
+  color: var(--fg);
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.contract-link-row a {
+  color: var(--red);
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 11px;
+  overflow-wrap: anywhere;
+}
+
+.contract-link-row small {
+  display: block;
+  margin-top: 2px;
+  color: color-mix(in srgb, var(--fg) 55%, transparent);
+  font-size: 10px;
+  line-height: 1.5;
+}
+
+.contract-link-row button {
+  flex-shrink: 0;
+  min-width: 62px;
+  padding: 5px 10px;
+  border: 1px solid color-mix(in srgb, var(--border) 72%, transparent);
+  border-radius: 7px;
+  color: color-mix(in srgb, var(--fg) 72%, transparent);
+  background: color-mix(in srgb, var(--panel) 72%, transparent);
+  cursor: pointer;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.contract-link-row button:hover {
+  border-color: var(--red);
+  color: var(--red);
+}
+
+.faq-section {
+  max-width: 760px;
+  margin: 40px auto 0;
+}
+
+.faq-section > h2 {
+  margin: 0 0 16px;
+  color: var(--fg);
+  font-family: "Barlow Condensed", "Arial Narrow", sans-serif;
+  font-size: 1.9rem;
+  font-weight: 900;
+  letter-spacing: 0.04em;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+.faq-list {
+  display: grid;
+  gap: 8px;
+}
+
+.faq-item {
+  padding: 13px 17px;
+  border: 1px solid color-mix(in srgb, var(--border) 72%, transparent);
+  border-radius: 9px;
+  background: color-mix(in srgb, var(--panel) 72%, transparent);
+}
+
+.faq-item summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  color: var(--fg);
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 700;
+  list-style: none;
+}
+
+.faq-item summary::-webkit-details-marker {
+  display: none;
+}
+
+.faq-item summary i {
+  flex-shrink: 0;
+  color: var(--red);
+  font-size: 17px;
+  font-style: normal;
+  transition: transform 200ms ease;
+}
+
+.faq-item[open] summary i {
+  transform: rotate(45deg);
+}
+
+.faq-item p {
+  margin: 10px 0 0;
+  color: color-mix(in srgb, var(--fg) 72%, transparent);
+  font-size: 12px;
+  line-height: 1.7;
+}
+
 .mint-progress {
   margin-bottom: 18px;
 }
